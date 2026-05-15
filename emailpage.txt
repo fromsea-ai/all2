@@ -1,0 +1,255 @@
+public class EmailVFController {
+
+    public String recipientEmail {get; set;}
+    public String subjectText {get; set;}
+    public String bodyText {get; set;}
+
+    // SEND EMAIL WITHOUT ATTACHMENT
+    public void sendSimpleEmail() {
+
+        try {
+
+            // EMAIL VALIDATION
+            if(recipientEmail == null ||
+               !isValidEmail(recipientEmail)) {
+
+                ApexPages.addMessage(
+
+                    new ApexPages.Message(
+
+                        ApexPages.Severity.ERROR,
+
+                        'Invalid Email Address'
+                    )
+                );
+
+                return;
+            }
+
+            Messaging.SingleEmailMessage mail =
+                new Messaging.SingleEmailMessage();
+
+            mail.setToAddresses(
+
+                new List<String>{ recipientEmail }
+            );
+
+            mail.setSubject(subjectText);
+
+            mail.setPlainTextBody(bodyText);
+
+            Messaging.SendEmailResult[] results =
+
+                Messaging.sendEmail(
+
+                    new Messaging.SingleEmailMessage[] {
+                        mail
+                    }
+                );
+
+            if(results[0].isSuccess()) {
+
+                ApexPages.addMessage(
+
+                    new ApexPages.Message(
+
+                        ApexPages.Severity.CONFIRM,
+
+                        'SUCCESS: Email Sent Successfully'
+                    )
+                );
+
+            } else {
+
+                ApexPages.addMessage(
+
+                    new ApexPages.Message(
+
+                        ApexPages.Severity.ERROR,
+
+                        'FAILED: Email Could Not Be Sent'
+                    )
+                );
+            }
+
+        } catch(Exception e) {
+
+            ApexPages.addMessage(
+
+                new ApexPages.Message(
+
+                    ApexPages.Severity.ERROR,
+
+                    'ERROR: ' + e.getMessage()
+                )
+            );
+        }
+    }
+
+    // SEND EMAIL WITH ATTACHMENT
+    public void sendEmailWithAttachment() {
+
+        try {
+
+            // EMAIL VALIDATION
+            if(recipientEmail == null ||
+               !isValidEmail(recipientEmail)) {
+
+                ApexPages.addMessage(
+
+                    new ApexPages.Message(
+
+                        ApexPages.Severity.ERROR,
+
+                        'Invalid Email Address'
+                    )
+                );
+
+                return;
+            }
+
+            Messaging.SingleEmailMessage mail =
+                new Messaging.SingleEmailMessage();
+
+            mail.setToAddresses(
+
+                new List<String>{ recipientEmail }
+            );
+
+            mail.setSubject(subjectText);
+
+            mail.setPlainTextBody(bodyText);
+
+            // ATTACHMENT
+            Messaging.EmailFileAttachment attachment =
+                new Messaging.EmailFileAttachment();
+
+            attachment.setFileName('Sample.txt');
+
+            attachment.setBody(
+
+                Blob.valueOf(
+                    'This is sample attachment content'
+                )
+            );
+
+            attachment.setContentType('text/plain');
+
+            mail.setFileAttachments(
+
+                new Messaging.EmailFileAttachment[] {
+                    attachment
+                }
+            );
+
+            Messaging.SendEmailResult[] results =
+
+                Messaging.sendEmail(
+
+                    new Messaging.SingleEmailMessage[] {
+                        mail
+                    }
+                );
+
+            if(results[0].isSuccess()) {
+
+                ApexPages.addMessage(
+
+                    new ApexPages.Message(
+
+                        ApexPages.Severity.CONFIRM,
+
+                        'SUCCESS: Email With Attachment Sent Successfully'
+                    )
+                );
+
+            } else {
+
+                ApexPages.addMessage(
+
+                    new ApexPages.Message(
+
+                        ApexPages.Severity.ERROR,
+
+                        'FAILED: Email Could Not Be Sent'
+                    )
+                );
+            }
+
+        } catch(Exception e) {
+
+            ApexPages.addMessage(
+
+                new ApexPages.Message(
+
+                    ApexPages.Severity.ERROR,
+
+                    'ERROR: ' + e.getMessage()
+                )
+            );
+        }
+    }
+
+    // EMAIL VALIDATION METHOD
+    public Boolean isValidEmail(String email) {
+
+        String pattern =
+
+            '^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$';
+
+        return Pattern.matches(pattern, email);
+    }
+}
+
+
+
+------------------------------------------------------------------------------------------------------
+
+
+<apex:page controller="EmailVFController">
+
+    <apex:form>
+
+        <apex:pageBlock title="Email Notification System">
+
+            <!-- MESSAGES -->
+
+            <apex:pageMessages />
+
+            <!-- INPUT FIELDS -->
+
+            <apex:pageBlockSection columns="1">
+
+                <apex:inputText
+                    value="{!recipientEmail}"
+                    label="Recipient Email" />
+
+                <apex:inputText
+                    value="{!subjectText}"
+                    label="Subject" />
+
+                <apex:inputTextarea
+                    value="{!bodyText}"
+                    label="Message Body" />
+
+            </apex:pageBlockSection>
+
+            <!-- BUTTONS -->
+
+            <apex:pageBlockButtons>
+
+                <apex:commandButton
+                    value="Send Email"
+                    action="{!sendSimpleEmail}" />
+
+                <apex:commandButton
+                    value="Send Email With Attachment"
+                    action="{!sendEmailWithAttachment}" />
+
+            </apex:pageBlockButtons>
+
+        </apex:pageBlock>
+
+    </apex:form>
+
+</apex:page>
