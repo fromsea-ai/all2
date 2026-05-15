@@ -1,0 +1,182 @@
+public class BankAccountSystem {
+
+    // MAIN MENU FUNCTION
+    public static void run(Integer choice,
+                           Integer customerId,
+                           String customerName,
+                           String email,
+                           Date birthDate,
+                           String dept) {
+
+        switch on choice {
+
+            // CREATE CUSTOMER
+            when 1 {
+
+                addCustomer(
+                    customerId,
+                    customerName,
+                    email,
+                    birthDate,
+                    dept
+                );
+            }
+
+            // VIEW CUSTOMERS
+            when 2 {
+
+                viewCustomers();
+            }
+
+            // SEARCH CUSTOMER
+            when 3 {
+
+                searchCustomer(customerId);
+            }
+
+            // UPDATE CUSTOMER
+            when 4 {
+
+                updateDepartment(customerId, dept);
+            }
+
+            // DELETE CUSTOMER
+            when 5 {
+
+                deleteCustomer(customerId);
+            }
+
+            when else {
+
+                System.debug('Invalid Choice');
+            }
+        }
+    }
+
+    // CREATE CUSTOMER
+    public static void addCustomer(Integer customerId,
+                                   String customerName,
+                                   String email,
+                                   Date birthDate,
+                                   String dept) {
+
+        Bank_Account__c cust = new Bank_Account__c();
+
+        cust.Customer_ID__c = customerId;
+        cust.Customer_Name__c = customerName;
+        cust.Email__c = email;
+        cust.Birth_Date__c = birthDate;
+        cust.Department__c = dept;
+
+        insert cust;
+
+        System.debug('Customer Added Successfully');
+    }
+
+    // VIEW ALL CUSTOMERS
+    public static void viewCustomers() {
+
+        List<Bank_Account__c> custList = [
+
+            SELECT Customer_ID__c,
+                   Customer_Name__c,
+                   Email__c,
+                   Birth_Date__c,
+                   Department__c
+            FROM Bank_Account__c
+        ];
+
+        System.debug('===== CUSTOMER RECORDS =====');
+
+        for(Bank_Account__c cust : custList) {
+
+            System.debug(
+
+                'Customer ID: ' + cust.Customer_ID__c +
+                ' | Name: ' + cust.Customer_Name__c +
+                ' | Email: ' + cust.Email__c +
+                ' | Birth Date: ' + cust.Birth_Date__c +
+                ' | Department: ' + cust.Department__c
+            );
+        }
+    }
+
+    // SEARCH CUSTOMER
+    public static void searchCustomer(Integer customerId) {
+
+        List<Bank_Account__c> custList = [
+
+            SELECT Customer_Name__c,
+                   Department__c
+            FROM Bank_Account__c
+            WHERE Customer_ID__c = :customerId
+        ];
+
+        if(custList.size() > 0) {
+
+            Bank_Account__c cust = custList[0];
+
+            System.debug(
+
+                'Customer Found -> ' +
+                cust.Customer_Name__c +
+                ' | Department: ' +
+                cust.Department__c
+            );
+
+        } else {
+
+            System.debug('Customer Not Found');
+        }
+    }
+
+    // UPDATE CUSTOMER DEPARTMENT
+    public static void updateDepartment(Integer customerId,
+                                        String newDept) {
+
+        List<Bank_Account__c> custList = [
+
+            SELECT Id,
+                   Department__c
+            FROM Bank_Account__c
+            WHERE Customer_ID__c = :customerId
+        ];
+
+        if(custList.size() > 0) {
+
+            Bank_Account__c cust = custList[0];
+
+            cust.Department__c = newDept;
+
+            update cust;
+
+            System.debug('Department Updated Successfully');
+
+        } else {
+
+            System.debug('Customer Not Found');
+        }
+    }
+
+    // DELETE CUSTOMER
+    public static void deleteCustomer(Integer customerId) {
+
+        List<Bank_Account__c> custList = [
+
+            SELECT Id
+            FROM Bank_Account__c
+            WHERE Customer_ID__c = :customerId
+        ];
+
+        if(custList.size() > 0) {
+
+            delete custList[0];
+
+            System.debug('Customer Deleted Successfully');
+
+        } else {
+
+            System.debug('Customer Not Found');
+        }
+    }
+}
