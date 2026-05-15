@@ -1,0 +1,182 @@
+public class EmployeeManagementSystem {
+
+    // MAIN MENU FUNCTION
+    public static void run(Integer choice,
+                           Integer empId,
+                           String empName,
+                           String email,
+                           Date birthDate,
+                           String dept) {
+
+        switch on choice {
+
+            // CREATE
+            when 1 {
+
+                addEmployee(
+                    empId,
+                    empName,
+                    email,
+                    birthDate,
+                    dept
+                );
+            }
+
+            // READ
+            when 2 {
+
+                viewEmployees();
+            }
+
+            // SEARCH
+            when 3 {
+
+                searchEmployee(empId);
+            }
+
+            // UPDATE
+            when 4 {
+
+                updateDepartment(empId, dept);
+            }
+
+            // DELETE
+            when 5 {
+
+                deleteEmployee(empId);
+            }
+
+            when else {
+
+                System.debug('Invalid Choice');
+            }
+        }
+    }
+
+    // CREATE EMPLOYEE
+    public static void addEmployee(Integer empId,
+                                   String empName,
+                                   String email,
+                                   Date birthDate,
+                                   String dept) {
+
+        Employee__c emp = new Employee__c();
+
+        emp.Emp_ID__c = empId;
+        emp.Emp_Name__c = empName;
+        emp.Email__c = email;
+        emp.Birth_Date__c = birthDate;
+        emp.Department__c = dept;
+
+        insert emp;
+
+        System.debug('Employee Added Successfully');
+    }
+
+    // READ ALL EMPLOYEES
+    public static void viewEmployees() {
+
+        List<Employee__c> empList = [
+
+            SELECT Emp_ID__c,
+                   Emp_Name__c,
+                   Email__c,
+                   Birth_Date__c,
+                   Department__c
+            FROM Employee__c
+        ];
+
+        System.debug('===== EMPLOYEE RECORDS =====');
+
+        for(Employee__c emp : empList) {
+
+            System.debug(
+
+                'Emp ID: ' + emp.Emp_ID__c +
+                ' | Name: ' + emp.Emp_Name__c +
+                ' | Email: ' + emp.Email__c +
+                ' | Birth Date: ' + emp.Birth_Date__c +
+                ' | Department: ' + emp.Department__c
+            );
+        }
+    }
+
+    // SEARCH EMPLOYEE
+    public static void searchEmployee(Integer empId) {
+
+        List<Employee__c> empList = [
+
+            SELECT Emp_ID__c,
+                   Emp_Name__c,
+                   Department__c
+            FROM Employee__c
+            WHERE Emp_ID__c = :empId
+        ];
+
+        if(empList.size() > 0) {
+
+            Employee__c emp = empList[0];
+
+            System.debug(
+                'Employee Found -> ' +
+                emp.Emp_Name__c +
+                ' | Department: ' +
+                emp.Department__c
+            );
+
+        } else {
+
+            System.debug('Employee Not Found');
+        }
+    }
+
+    // UPDATE EMPLOYEE DEPARTMENT
+    public static void updateDepartment(Integer empId,
+                                        String newDept) {
+
+        List<Employee__c> empList = [
+
+            SELECT Id,
+                   Department__c
+            FROM Employee__c
+            WHERE Emp_ID__c = :empId
+        ];
+
+        if(empList.size() > 0) {
+
+            Employee__c emp = empList[0];
+
+            emp.Department__c = newDept;
+
+            update emp;
+
+            System.debug('Department Updated Successfully');
+
+        } else {
+
+            System.debug('Employee Not Found');
+        }
+    }
+
+    // DELETE EMPLOYEE
+    public static void deleteEmployee(Integer empId) {
+
+        List<Employee__c> empList = [
+
+            SELECT Id
+            FROM Employee__c
+            WHERE Emp_ID__c = :empId
+        ];
+
+        if(empList.size() > 0) {
+
+            delete empList[0];
+
+            System.debug('Employee Deleted Successfully');
+
+        } else {
+
+            System.debug('Employee Not Found');
+        }
+    }
+}
