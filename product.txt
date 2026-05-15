@@ -1,0 +1,207 @@
+public class ProductInventoryController {
+
+    public Product_Inventory__c prod {get; set;}
+
+    public List<Product_Inventory__c> productList {get; set;}
+
+    public Boolean isEdit {get; set;}
+
+    // CONSTRUCTOR
+    public ProductInventoryController() {
+
+        prod = new Product_Inventory__c();
+
+        isEdit = false;
+
+        loadProducts();
+    }
+
+    // LOAD PRODUCTS
+    public void loadProducts() {
+
+        productList = [
+
+            SELECT Id,
+                   Product_Name__c,
+                   Serial_No__c,
+                   Manufacture_Date__c,
+                   Expiry_Date__c
+            FROM Product_Inventory__c
+            ORDER BY CreatedDate DESC
+        ];
+    }
+
+    // SAVE OR UPDATE PRODUCT
+    public void saveProduct() {
+
+        if(isEdit == false) {
+
+            insert prod;
+
+        } else {
+
+            update prod;
+
+            isEdit = false;
+        }
+
+        prod = new Product_Inventory__c();
+
+        loadProducts();
+    }
+
+    // EDIT PRODUCT
+    public void editProduct() {
+
+        String productId = ApexPages.currentPage()
+                           .getParameters()
+                           .get('editId');
+
+        prod = [
+
+            SELECT Id,
+                   Product_Name__c,
+                   Serial_No__c,
+                   Manufacture_Date__c,
+                   Expiry_Date__c
+            FROM Product_Inventory__c
+            WHERE Id = :productId
+        ];
+
+        isEdit = true;
+    }
+
+    // DELETE PRODUCT
+    public void deleteProduct() {
+
+        String productId = ApexPages.currentPage()
+                           .getParameters()
+                           .get('delId');
+
+        Product_Inventory__c p = [
+
+            SELECT Id
+            FROM Product_Inventory__c
+            WHERE Id = :productId
+        ];
+
+        delete p;
+
+        loadProducts();
+    }
+
+    // CANCEL EDIT
+    public void cancelEdit() {
+
+        prod = new Product_Inventory__c();
+
+        isEdit = false;
+    }
+}
+
+
+
+------------------------------------------------------------------------------------------------------------
+
+
+<apex:page controller="ProductInventoryController">
+
+    <apex:form>
+
+        <!-- PRODUCT FORM -->
+
+        <apex:pageBlock title="Product Inventory System"
+                        id="mainBlock">
+
+            <apex:pageBlockSection columns="1">
+
+                <apex:inputText value="{!prod.Product_Name__c}"
+                                label="Product Name"/>
+
+                <apex:inputText value="{!prod.Serial_No__c}"
+                                label="Serial No"/>
+
+                <apex:inputField value="{!prod.Manufacture_Date__c}"
+                                 label="Manufacture Date"/>
+
+                <apex:inputField value="{!prod.Expiry_Date__c}"
+                                 label="Expiry Date"/>
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockButtons>
+
+                <apex:commandButton
+                    value="{!IF(isEdit,'Update Product','Save Product')}"
+                    action="{!saveProduct}"
+                    rerender="mainBlock,productTable"/>
+
+                <apex:commandButton
+                    value="Cancel"
+                    action="{!cancelEdit}"
+                    rendered="{!isEdit}"
+                    rerender="mainBlock"/>
+
+            </apex:pageBlockButtons>
+
+        </apex:pageBlock>
+
+        <br/>
+
+        <!-- PRODUCT TABLE -->
+
+        <apex:pageBlock title="Product Records"
+                        id="productTable">
+
+            <apex:pageBlockTable value="{!productList}"
+                                 var="p">
+
+                <apex:column value="{!p.Product_Name__c}"
+                             headerValue="Product Name"/>
+
+                <apex:column value="{!p.Serial_No__c}"
+                             headerValue="Serial No"/>
+
+                <apex:column value="{!p.Manufacture_Date__c}"
+                             headerValue="Manufacture Date"/>
+
+                <apex:column value="{!p.Expiry_Date__c}"
+                             headerValue="Expiry Date"/>
+
+                <!-- EDIT -->
+
+                <apex:column headerValue="Edit">
+
+                    <apex:commandLink value="Edit"
+                                      action="{!editProduct}"
+                                      rerender="mainBlock">
+
+                        <apex:param name="editId"
+                                    value="{!p.Id}"/>
+
+                    </apex:commandLink>
+
+                </apex:column>
+
+                <!-- DELETE -->
+
+                <apex:column headerValue="Delete">
+
+                    <apex:commandLink value="Delete"
+                                      action="{!deleteProduct}"
+                                      rerender="productTable">
+
+                        <apex:param name="delId"
+                                    value="{!p.Id}"/>
+
+                    </apex:commandLink>
+
+                </apex:column>
+
+            </apex:pageBlockTable>
+
+        </apex:pageBlock>
+
+    </apex:form>
+
+</apex:page>
