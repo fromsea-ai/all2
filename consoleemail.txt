@@ -1,0 +1,185 @@
+public class EmailNotificationSystem {
+
+    // MAIN MENU
+    public static void run(Integer choice,
+                           String recipientEmail,
+                           String subject,
+                           String body) {
+
+        switch on choice {
+
+            // EMAIL WITHOUT ATTACHMENT
+            when 1 {
+
+                sendSimpleEmail(
+                    recipientEmail,
+                    subject,
+                    body
+                );
+            }
+
+            // EMAIL WITH ATTACHMENT
+            when 2 {
+
+                sendEmailWithAttachment(
+                    recipientEmail,
+                    subject,
+                    body
+                );
+            }
+
+            when else {
+
+                System.debug('Invalid Choice');
+            }
+        }
+    }
+
+    // EMAIL VALIDATION METHOD
+    public static Boolean isValidEmail(String email) {
+
+        String emailPattern =
+
+            '^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$';
+
+        return Pattern.matches(
+            emailPattern,
+            email
+        );
+    }
+
+    // SEND SIMPLE EMAIL
+    public static void sendSimpleEmail(String recipientEmail,
+                                       String subject,
+                                       String body) {
+
+        try {
+
+            // VALIDATE EMAIL
+            if(recipientEmail == null ||
+               !isValidEmail(recipientEmail)) {
+
+                System.debug(
+                    'ERROR: Invalid Email Address'
+                );
+
+                return;
+            }
+
+            Messaging.SingleEmailMessage mail =
+                new Messaging.SingleEmailMessage();
+
+            mail.setToAddresses(
+                new List<String>{ recipientEmail }
+            );
+
+            mail.setSubject(subject);
+
+            mail.setPlainTextBody(body);
+
+            Messaging.SendEmailResult[] results =
+
+                Messaging.sendEmail(
+                    new Messaging.SingleEmailMessage[] { mail }
+                );
+
+            if(results[0].isSuccess()) {
+
+                System.debug(
+                    'SUCCESS: Email sent successfully'
+                );
+
+            } else {
+
+                System.debug(
+                    'FAILED: Email could not be sent'
+                );
+            }
+
+        } catch(Exception e) {
+
+            System.debug(
+                'ERROR: ' + e.getMessage()
+            );
+        }
+    }
+
+    // SEND EMAIL WITH ATTACHMENT
+    public static void sendEmailWithAttachment(
+                                String recipientEmail,
+                                String subject,
+                                String body) {
+
+        try {
+
+            // VALIDATE EMAIL
+            if(recipientEmail == null ||
+               !isValidEmail(recipientEmail)) {
+
+                System.debug(
+                    'ERROR: Invalid Email Address'
+                );
+
+                return;
+            }
+
+            Messaging.SingleEmailMessage mail =
+                new Messaging.SingleEmailMessage();
+
+            mail.setToAddresses(
+                new List<String>{ recipientEmail }
+            );
+
+            mail.setSubject(subject);
+
+            mail.setPlainTextBody(body);
+
+            // ATTACHMENT
+            Messaging.EmailFileAttachment attachment =
+                new Messaging.EmailFileAttachment();
+
+            attachment.setFileName('Sample.txt');
+
+            attachment.setBody(
+
+                Blob.valueOf(
+                    'This is sample attachment content'
+                )
+            );
+
+            attachment.setContentType('text/plain');
+
+            mail.setFileAttachments(
+
+                new Messaging.EmailFileAttachment[] {
+                    attachment
+                }
+            );
+
+            Messaging.SendEmailResult[] results =
+
+                Messaging.sendEmail(
+                    new Messaging.SingleEmailMessage[] { mail }
+                );
+
+            if(results[0].isSuccess()) {
+
+                System.debug(
+                    'SUCCESS: Email with attachment sent successfully'
+                );
+
+            } else {
+
+                System.debug(
+                    'FAILED: Email could not be sent'
+                );
+            }
+
+        } catch(Exception e) {
+
+            System.debug(
+                'ERROR: ' + e.getMessage()
+            );
+        }
+    }
+}
